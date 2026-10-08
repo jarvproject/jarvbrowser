@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>JarvScript Beta v0.1.1</title>
+    <style>
+        /* Переменные для динамических кастомных тем */
+        :root {
+            --bg-main: #121212;
+            --bg-nav: #1f1f1f;
+            --bg-input: #2a2a2a;
+            --text-color: #e0e0e0;
+            --accent: #007acc;
+        }
+        body {
+            margin: 0; padding: 0; font-family: sans-serif;
+            background: var(--bg-main); color: var(--text-color);
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+        .nav-bar {
+            background: var(--bg-nav); padding: 8px 12px;
+            display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #333;
+        }
+        input, select {
+            padding: 8px 12px; background: var(--bg-input); 
+            border: 1px solid #444; color: #fff; border-radius: 4px; outline: none;
+        }
+        input[type="text"] { flex: 1; }
+        button {
+            padding: 8px 16px; background: var(--accent);
+            border: none; color: white; border-radius: 4px; cursor: pointer;
+        }
+        button:hover { filter: brightness(1.2); }
+        .workspace { display: flex; flex: 1; height: calc(100vh - 53px); }
+        iframe { flex: 4; border: none; background: #fff; }
+        
+        /* Боковая панель для управления Бета-фичами (Темы и Пароли) */
+        .sidebar {
+            flex: 1; background: var(--bg-nav); border-left: 1px solid #333;
+            padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto;
+        }
+        .vault-item { background: #2a2a2a; padding: 5px; border-radius: 4px; margin-top: 5px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <button onclick="goHome()">🏠</button>
+        <input type="text" id="urlInput" placeholder="Поиск в DuckDuckGo или URL..." onkeydown="if(event.key === 'Enter') handleSearch()">
+        <button onclick="handleSearch()">Поехали</button>
+        <button onclick="location.href='o.html'">Раздел O</button>
+    </div>
+    
+    <div class="workspace">
+        <iframe id="viewFrame" src="https://duckduckgo.com"></iframe>
+
+        <!-- Боковая Консоль управления Улучшениями (Темы + SQL) -->
+        <div class="sidebar">
+            <h3>🎨 Управление Темами</h3>
+            <label>Выбрать тему:</label>
+            <select id="themeSelect" onchange="changePresetTheme(this.value)">
+                <option value="dark">Кибер Кирпич (Тёмная)</option>
+                <option value="light">Белый Код (Светлая)</option>
+                <option value="matrix">Хацкер (Зеленая)</option>
+                <option value="custom">Свой Цвет (Редактор)</option>
+            </select>
+            <div id="customThemeEditor" style="display:none; flex-direction: column; gap: 5px;">
+                Фон: <input type="color" id="cpBg" oninput="applyCustomTheme()">
+                Панель: <input type="color" id="cpNav" oninput="applyCustomTheme()">
+                Акцент: <input type="color" id="cpAccent" oninput="applyCustomTheme()">
+            </div>
+
+            <hr style="width:100%; border: 0.5px solid #333;">
+
+            <h3>🔒 Менеджер Паролей (SQL)</h3>
+            <input type="text" id="pSite" placeholder="Сайт (например, google.com)">
+            <input type="text" id="pLogin" placeholder="Логин">
+            <input type="password" id="pPass" placeholder="Пароль">
+            <button onclick="saveToVault()">Сохранить в SQL</button>
+            
+            <div id="vaultList">
+                <!-- Сюда рендерятся записи из базы данных -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const frame = document.getElementById('viewFrame');
+        const input = document.getElementById('urlInput');
+
+        function goHome() { frame.src = 'https://duckduckgo.com'; input.value = ''; }
+
+        function handleSearch() {
+            let val = input.value.trim();
+            if (!val) return;
+            // Теперь открываются ДАЖЕ google.com и оригинальный duckduckgo.com благодаря main.js!
+            if (val.startsWith('http://') || val.startsWith('https://')) { frame.src = val; }
+            else if (val.includes('.') && !val.includes(' ')) { frame.src = 'https://' + val; }
+            else { frame.src = 'https://duckduckgo.com' + encodeURIComponent(val); }
+        }
+
+        // --- ЛОГИКА СИСТЕМЫ ТЕМ (Пункт 3) ---
+        const root = document.documentElement;
+        function changePresetTheme(theme) {
+            const editor = document.getElementById('customThemeEditor');
+            editor.style.display = (theme === 'custom') ? 'flex' : 'none';
+            if (theme === 'dark') {
+                root.style.setProperty('--bg-main', '#121212'); root.style.setProperty('--bg-nav', '#1f1f1f');
+                root.style.setProperty('--bg-input', '#2a2a2a'); root.style.setProperty('--text-color', '#e0e0e0');
+                root.style.setProperty('--accent', '#007acc');
+            } else if (theme === 'light') {
+                root.style.setProperty('--bg-main', '#f0f0f0'); root.style.setProperty('--bg-nav', '#dddddd');
+                root.style.setProperty('--bg-input', '#ffffff'); root.style.setProperty('--text-color', '#121212');
+                root.style.setProperty('--accent', '#005999');
+            } else if (theme === 'matrix') {
+                root.style.setProperty('--bg-main', '#000000'); root.style.setProperty('--bg-nav', '#0d0d0d');
+                root.style.setProperty('--bg-input', '#141414'); root.style.setProperty('--text-color', '#00ff00');
+                root.style.setProperty('--accent', '#00aa00');
+            }
+        }
+        function applyCustomTheme() {
+            root.style.setProperty('--bg-main', document.getElementById('cpBg').value);
+            root.style.setProperty('--bg-nav', document.getElementById('cpNav').value);
+            root.style.setProperty('--accent', document.getElementById('cpAccent').value);
+        }
+
+        // --- ЛОГИКА SQL БАЗЫ ПАРОЛЕЙ (Пункт 4) ---
+        async function saveToVault() {
+            const site = document.getElementById('pSite').value;
+            const login = document.getElementById('pLogin').value;
+            const password = document.getElementById('pPass').value;
+            if(!site || !login || !password) return alert('Заполните поля!');
+
+            const success = await window.jarvVault.save({ site, login, password });
+            if(success) {
+                alert('Успешно сохранено в зашифрованный SQL!');
+                loadVault();
+            }
+        }
+
+        async function loadVault() {
+            const list = document.getElementById('vaultList');
+            list.innerHTML = 'Загрузка паролей...';
+            const data = await window.jarvVault.getAll();
+            list.innerHTML = '';
+            data.forEach(item => {
+                list.innerHTML += `<div class="vault-item"><b>${item.site}</b><br>L: ${item.login} | P: ${item.password}</div>`;
+            });
+        }
+        // Загружаем сохраненные пароли при старте
+        setTimeout(loadVault, 1000);
+    </script>
+</body>
+</html>
