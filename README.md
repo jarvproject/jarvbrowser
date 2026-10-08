@@ -1,5 +1,6 @@
 # JarvScript
 * JarvScript - a browser created for linux, in free Open source, and fast open.
+**IF YOU IN GITHUB PAGES SITE, LINK TO PROJECT:** [JarvProject/JarvBrowser](https://github.com/jarvproject/jarvbrowser)
 # Version
 * Current version: 0.1.0
 # Needed
