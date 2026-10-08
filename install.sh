@@ -2,9 +2,9 @@
 
 BUILD_DIR="/tmp/jarvscript-build"
 CURRENT_DIR=$(pwd)
-FINAL_BINARY="/usr/bin/jarvscript"
+OUTPUT_BINARY="jarvscript-0.1.1.AppImage"
 
-echo "=== Autonomous build and installation of JarvScript v0.1.0 ==="
+echo "=== Autonomous compilation of JarvScript v0.1.1 ==="
 
 if [ ! -f "./main.js" ] || [ ! -d "./browser" ]; then
     echo "❌ Error: Script must be executed from the directory containing main.js and browser/!"
@@ -62,22 +62,12 @@ if [ -z "$APPIMAGE_PATH" ]; then
     exit 1
 fi
 
-echo "🔒 Requesting sudo permissions to install the browser into your system..."
-sudo cp "$APPIMAGE_PATH" "$FINAL_BINARY"
-sudo chmod +x "$FINAL_BINARY"
+cp "$APPIMAGE_PATH" "$CURRENT_DIR/$OUTPUT_BINARY"
+chmod +x "$CURRENT_DIR/$OUTPUT_BINARY"
 
-echo "🔗 Setting up global system aliases..."
-if [ -f "$HOME/.bashrc" ]; then
-    echo "alias jarvscript='$FINAL_BINARY'" >> "$HOME/.bashrc"
-fi
-if [ -f "$HOME/.zshrc" ]; then
-    echo "alias jarvscript='$FINAL_BINARY'" >> "$HOME/.zshrc"
-fi
-
-echo "🧹 Build completed. Removing temporary files, package.json, and node_modules..."
+echo "🧹 Build completed. Purging temporary files..."
 cd "$CURRENT_DIR" || exit
 rm -rf "$BUILD_DIR"
 rm -f package-lock.json
 
-echo "=== 🎉 Success! JarvScript has been installed to $FINAL_BINARY ==="
-echo "All build residue was purged. Restart your terminal and run: jarvscript"
+echo "=== 🎉 Success! Monolithic binary created: ./$OUTPUT_BINARY ==="
